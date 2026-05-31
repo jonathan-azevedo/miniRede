@@ -30,6 +30,60 @@ struct MiniRede {
     // - publicacoes cadastradas
 };
 
+struct usuario{ 
+    int id;
+    std::string username;
+    std::string nome;
+    lista_usuarios seguindo;
+    lista_publicacoes publicacoes;
+    fila_notificacoes notificacoes;
+};
+
+struct publicacao{
+    int id;
+    int idUsuario;
+    int timestamp;
+    std::string texto;
+    int curtidas;
+    lista_usuarios curtiram;
+};
+
+enum tipoNotificacao{FOLLOW, LIKE};
+
+struct notificacao{
+    tipoNotificacao tipo;
+    int idUsuario;
+    int idPost;
+};
+
+struct node_lista_usuarios{
+    usuario *usuario;
+    node_lista_usuarios *prox;
+};
+
+struct node_lista_publicacoes{
+    publicacao *publicacao;
+    node_lista_publicacoes *prox;
+};
+
+struct node_fila{
+    notificacao notificacao;
+    node_fila *prox;
+};
+
+struct lista_usuarios{
+    node_lista_usuarios *inicio;
+};
+struct lista_publicacoes{
+    node_lista_publicacoes *inicio;
+};
+
+struct fila_notificacoes{
+    node_fila *inicio;
+    node_fila *fim;
+};
+
+
 void inicializarMiniRede(MiniRede& rede);
 void liberarMiniRede(MiniRede& rede);
 void processarComandos(MiniRede& rede, std::istream& entrada, std::ostream& saida);
