@@ -2,6 +2,7 @@
 #define MINI_REDE_H
 
 #include <iostream>
+#include "estruturas.h"
 
 const int TAM_USERNAME = 50;
 const int TAM_NOME = 100;
@@ -20,32 +21,23 @@ const int TAM_COMANDO = 30;
 // - nos para fila de notificacoes
 //
 // Os campos de cada struct fazem parte do projeto dos alunos.
+struct usuario;
+struct publicacao;
+struct node_fila;
+struct node_lista_publicacoes;
+struct node_lista_usuarios;
+struct lista_publicacoes;
+struct lista_usuarios;
+struct fila_notificacoes;
 
 struct MiniRede {
+    node_arvore *raiz_arvore;
     // TODO: declarar aqui os ponteiros/estruturas principais da rede.
     //
     // Exemplos de responsabilidades:
     // - usuarios armazenados por id
     // - usuarios acessiveis por username
     // - publicacoes cadastradas
-};
-
-struct usuario{ 
-    int id;
-    std::string username;
-    std::string nome;
-    lista_usuarios seguindo;
-    lista_publicacoes publicacoes;
-    fila_notificacoes notificacoes;
-};
-
-struct publicacao{
-    int id;
-    int idUsuario;
-    int timestamp;
-    std::string texto;
-    int curtidas;
-    lista_usuarios curtiram;
 };
 
 enum tipoNotificacao{FOLLOW, LIKE};
@@ -83,12 +75,39 @@ struct fila_notificacoes{
     node_fila *fim;
 };
 
+struct usuario{ 
+    int id;
+    std::string username;
+    std::string nome;
+    lista_usuarios seguindo;
+    lista_publicacoes publicacoes;
+    fila_notificacoes notificacoes;
+
+    usuario(int ID, std::string USERNAME, std::string NOME){
+        id = ID;
+        username = USERNAME;
+        nome = NOME;
+        seguindo.inicio = nullptr;
+        publicacoes.inicio = nullptr;
+        notificacoes.inicio = nullptr;
+        notificacoes.fim = nullptr;
+    }
+};
+
+struct publicacao{
+    int id;
+    int idUsuario;
+    int timestamp;
+    std::string texto;
+    int curtidas;
+    lista_usuarios curtiram;
+};
 
 void inicializarMiniRede(MiniRede& rede);
 void liberarMiniRede(MiniRede& rede);
 void processarComandos(MiniRede& rede, std::istream& entrada, std::ostream& saida);
 
-void cadastrarUsuario(MiniRede& rede, int id, const char username[], const char nomeCompleto[], std::ostream& saida);
+void cadastrarUsuario(MiniRede& rede, int id, std::string username, std::string nomeCompleto, std::ostream& saida);
 void buscarUsuarioPorId(MiniRede& rede, int id, std::ostream& saida);
 void buscarUsuarioPorUsername(MiniRede& rede, const char username[], std::ostream& saida);
 void listarUsuarios(MiniRede& rede, std::ostream& saida);
