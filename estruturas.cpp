@@ -179,3 +179,14 @@ usuario *buscaAVL(node_arvore *a, int id){
     
     return buscaAVL(a->dir, id);
 }
+
+void imprimirAVL(node_arvore *a, std::ostream& saida){
+    if(a == nullptr)
+        return;
+    else{
+        usuario *user = a->usuario;
+        imprimirAVL(a->esq, saida);
+        saida << "USER " << user->id << " " << user->username << " " << user->nome << "\n";
+        imprimirAVL(a->dir, saida);
+    }
+}

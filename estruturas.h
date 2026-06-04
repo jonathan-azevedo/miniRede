@@ -1,6 +1,8 @@
 #ifndef ESTRUTURAS_H
 #define ESTRUTURAS_H
 
+#include <iostream>
+
 struct usuario;
 
 struct node_arvore{
@@ -18,5 +20,6 @@ node_arvore *casoEsquerda(node_arvore* a, bool& aumentouAltura);
 node_arvore *casoDireita(node_arvore* a, bool& aumentouAltura);
 node_arvore *insereAVL(node_arvore* a, usuario *usuario, bool& aumentouAltura);
 usuario *buscaAVL(node_arvore *a, int id);
+void imprimirAVL(node_arvore *a, std::ostream& saida);
 
 #endif

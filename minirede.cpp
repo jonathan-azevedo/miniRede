@@ -28,6 +28,9 @@ void processarComandos(MiniRede& rede, std::istream& entrada, std::ostream& said
             entrada >> id;
             buscarUsuarioPorId(rede, id, saida);
         }
+        else if(comando == "LIST_USERS"){
+            listarUsuarios(rede, saida);
+        }
         else{
             saida << "ERROR INVALID_COMMAND\n";
         }
@@ -35,6 +38,11 @@ void processarComandos(MiniRede& rede, std::istream& entrada, std::ostream& said
 }
 
 void cadastrarUsuario(MiniRede& rede, int id, std::string username, std::string nomeCompleto, std::ostream& saida){
+    usuario *checagem = buscaAVL(rede.raiz_arvore, id);
+    if(checagem != nullptr){
+        saida << "ERROR USER_EXISTS\n";
+        return;
+    }
     usuario *novo_usuario = new usuario{id,username,nomeCompleto};
     bool aumentouAltura = false;
     rede.raiz_arvore = insereAVL(rede.raiz_arvore, novo_usuario, aumentouAltura);
@@ -57,7 +65,9 @@ void buscarUsuarioPorUsername(MiniRede& rede, const char username[], std::ostrea
 }
 
 void listarUsuarios(MiniRede& rede, std::ostream& saida){
-    // TODO
+    saida << "USERS_BEGIN\n";
+    imprimirAVL(rede.raiz_arvore, saida);
+    saida << "USERS_END\n";
 }
 
 void seguirUsuario(MiniRede& rede, int idSeguidor, int idSeguido, std::ostream& saida){
