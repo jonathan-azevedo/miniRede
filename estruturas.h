@@ -17,5 +17,6 @@ node_arvore *rotacaoDireitaEsquerda(node_arvore *a);
 node_arvore *casoEsquerda(node_arvore* a, bool& aumentouAltura);
 node_arvore *casoDireita(node_arvore* a, bool& aumentouAltura);
 node_arvore *insereAVL(node_arvore* a, usuario *usuario, bool& aumentouAltura);
+usuario *buscaAVL(node_arvore *a, int id);
 
 #endif

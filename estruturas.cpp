@@ -166,3 +166,16 @@ node_arvore *rotacaoDireitaEsquerda(node_arvore *a) {
     y->FB = 0;
     return y; 
 }
+
+usuario *buscaAVL(node_arvore *a, int id){
+    if(a == nullptr)
+        return nullptr;
+    usuario *user = a->usuario;
+    if(user->id == id){
+        return user;
+    }
+    if(id < user->id)
+       return buscaAVL(a->esq,id);
+    
+    return buscaAVL(a->dir, id);
+}

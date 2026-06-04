@@ -23,6 +23,14 @@ void processarComandos(MiniRede& rede, std::istream& entrada, std::ostream& said
             entrada >> id >> username >> nomeCompleto;
             cadastrarUsuario(rede, id, username, nomeCompleto, saida);
         }
+        else if(comando == "FIND_USER"){
+            int id;
+            entrada >> id;
+            buscarUsuarioPorId(rede, id, saida);
+        }
+        else{
+            saida << "ERROR INVALID_COMMAND\n";
+        }
     }
 }
 
@@ -34,7 +42,14 @@ void cadastrarUsuario(MiniRede& rede, int id, std::string username, std::string 
 }
 
 void buscarUsuarioPorId(MiniRede& rede, int id, std::ostream& saida){
-    // TODO
+    usuario *user = buscaAVL(rede.raiz_arvore, id);
+    if(user != nullptr){
+        saida << "USER " << user->id << " " << user->username << " " << user->nome << "\n";
+    }
+    else{
+        saida << "ERROR USER_NOT_FOUND" << "\n";
+    }
+    
 }
 
 void buscarUsuarioPorUsername(MiniRede& rede, const char username[], std::ostream& saida){
