@@ -4,7 +4,7 @@
 
 #include <iostream>
 #include "estruturas.h"
-#include "minirede.h"
+//#include "minirede.h"
 
 const int TAM_USERNAME = 50;
 const int TAM_NOME = 100;
