@@ -1,5 +1,4 @@
 #include "minirede.h"
-#include "estruturas.h"
 
 
 void inicializarMiniRede(MiniRede& rede){
@@ -40,10 +39,14 @@ void processarComandos(MiniRede& rede, std::istream& entrada, std::ostream& said
             buscarUsuarioPorUsername(rede, username, saida);
         }
         else if(comando == "FOLLOW"){
-            int id;
-            int id2;
+            int id,id2;
             entrada >> id >> id2;
-            seguirUsuario(rede,id,id2,saida);
+            seguirUsuario(rede, id, id2, saida);
+        }
+        else if(comando == "LIST_FOLLOWING"){
+            int id;
+            entrada >> id;
+            listarSeguindo(rede, id, saida);
         }
         else if(comando == "ADD_POST"){
             int postid;
@@ -51,8 +54,8 @@ void processarComandos(MiniRede& rede, std::istream& entrada, std::ostream& said
             int timestamp;
             std::string texto;
             entrada >> postid >> id >> timestamp;
-            std::getline(std::cin,texto);
-            cadastrarPublicacao(rede, postid,id, timestamp,texto,saida);
+            std::getline(std::cin, texto);
+            cadastrarPublicacao(rede, postid, id, timestamp, texto, saida);
 
         }
         else{
@@ -104,11 +107,10 @@ void listarUsuarios(MiniRede& rede, std::ostream& saida){
 }
 
 void seguirUsuario(MiniRede& rede, int idSeguidor, int idSeguido, std::ostream& saida){
+    usuario *seguidor = buscarAVL(rede.raiz_arvore, idSeguidor);
+    usuario *seguido = buscarAVL(rede.raiz_arvore, idSeguido);
 
-    usuario* seguidor = buscarAVL(rede.raiz_arvore, idSeguidor);
-    usuario* seguido = buscarAVL(rede.raiz_arvore, idSeguido);
-
-    if (seguidor == nullptr || seguido == nullptr){
+    if(seguidor == nullptr || seguido == nullptr){
         saida << "ERROR USER_NOT_FOUND\n";
         return;
     }
@@ -117,38 +119,44 @@ void seguirUsuario(MiniRede& rede, int idSeguidor, int idSeguido, std::ostream& 
         return;
     }
 
-    if(!ja_seguido(&seguidor->seguindo, seguido)){
-
-        novo_seguidor(&seguidor->seguindo, seguido);
+    if(!jaSeguido(&seguidor->seguindo, seguido)){
+        novoSeguidor(&seguidor->seguindo, seguido);
         saida << "FOLLOWED\n";
+        //notificar
         return;
     }
 
     saida << "ERROR ALREADY_FOLLOWING\n";
-    return;
-
 }
 
 void listarSeguindo(MiniRede& rede, int idUsuario, std::ostream& saida){
-    // TODO
+    usuario *user = buscarAVL(rede.raiz_arvore, idUsuario);
+    if(user == nullptr){
+        saida << "ERROR USER_NOT_FOUND\n";
+        return;
+    }
+    saida << "FOLLOWING_BEGIN\n";
+    node_lista_usuarios *atual = user->seguindo.inicio;
+    while(atual != nullptr){
+        saida << "USER " << atual->usuario->id << " " << atual->usuario->username << " " << atual->usuario->nome << "\n";
+        atual = atual->prox;
+    }
+    saida << "FOLLOWING_END\n";
 }
 
 void cadastrarPublicacao(MiniRede& rede, int idPost, int idAutor, int timestamp, std::string texto, std::ostream& saida){
-    usuario* id_usuario = buscarAVL(rede.raiz_arvore, idAutor);
-    if (id_usuario == nullptr) {
+    usuario *id_usuario = buscarAVL(rede.raiz_arvore, idAutor);
+    if(id_usuario == nullptr) {
         saida << "ERROR USER_NOT_FOUND\n";
         return;
     }
 
-    publicacao* novo_post = new publicacao;
-    novo_post->id = idPost;
-    novo_post->idUsuario = idAutor;
-    novo_post->timestamp = timestamp;
-    novo_post->texto = texto;
 
-    nova_publicacao(&(id_usuario->publicacoes),novo_post);
-    saida << "POST_ADDED" << std::endl;
-    return;
+
+    publicacao *novo_post = new publicacao{idPost, idAutor, timestamp, texto};
+
+    novaPublicacao(&(id_usuario->publicacoes), novo_post);
+    saida << "POST_ADDED" << "\n";
     // OBS FALTA AINDA ARRUMAR A PARTE DE " ERROR POST_EXISTS" ainda não está implementado
 }
 

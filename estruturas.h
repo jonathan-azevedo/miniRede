@@ -6,6 +6,17 @@
 
 struct usuario;
 struct MiniRede;
+struct lista_usuarios;
+struct lista_publicacoes;
+struct publicacao;
+
+enum tipoNotificacao{FOLLOW, LIKE};
+
+struct notificacao{
+    tipoNotificacao tipo;
+    int idUsuario;
+    int idPost;
+};
 
 struct node_arvore{
     usuario *usuario;
@@ -17,6 +28,33 @@ struct node_arvore{
 struct node_hash{
     usuario *usuario;
     node_hash *prox;
+};
+
+struct node_lista_usuarios{
+    usuario *usuario;
+    node_lista_usuarios *prox;
+};
+
+struct node_lista_publicacoes{
+    publicacao *publicacao;
+    node_lista_publicacoes *prox;
+};
+
+struct node_fila{
+    notificacao notificacao;
+    node_fila *prox;
+};
+
+struct lista_usuarios{
+    node_lista_usuarios *inicio;
+};
+struct lista_publicacoes{
+    node_lista_publicacoes *inicio;
+};
+
+struct fila_notificacoes{
+    node_fila *inicio;
+    node_fila *fim;
 };
 
 node_arvore *rotacaoDireita(node_arvore *a);
@@ -31,4 +69,9 @@ void imprimirAVL(node_arvore *a, std::ostream& saida);
 unsigned int hash(const std::string& username);
 void insereHash(MiniRede& rede, usuario *novo_usuario);
 node_hash *buscarHash(MiniRede& rede, std::string username);
+void novoSeguidor(lista_usuarios *seguidos, usuario *novo);
+bool jaSeguido(lista_usuarios *seguidos, usuario *novo);
+void novaPublicacao(lista_publicacoes *publicacoes, publicacao *novo);
+
+
 #endif

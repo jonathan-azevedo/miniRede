@@ -4,7 +4,6 @@
 
 #include <iostream>
 #include "estruturas.h"
-//#include "minirede.h"
 
 const int TAM_USERNAME = 50;
 const int TAM_NOME = 100;
@@ -44,41 +43,6 @@ struct MiniRede {
     // - publicacoes cadastradas
 };
 
-enum tipoNotificacao{FOLLOW, LIKE};
-
-struct notificacao{
-    tipoNotificacao tipo;
-    int idUsuario;
-    int idPost;
-};
-
-struct node_lista_usuarios{
-    usuario *usuario;
-    node_lista_usuarios *prox;
-};
-
-struct node_lista_publicacoes{
-    publicacao *publicacao;
-    node_lista_publicacoes *prox;
-};
-
-struct node_fila{
-    notificacao notificacao;
-    node_fila *prox;
-};
-
-struct lista_usuarios{
-    node_lista_usuarios *inicio;
-};
-struct lista_publicacoes{
-    node_lista_publicacoes *inicio;
-};
-
-struct fila_notificacoes{
-    node_fila *inicio;
-    node_fila *fim;
-};
-
 struct usuario{ 
     int id;
     std::string username;
@@ -105,6 +69,15 @@ struct publicacao{
     std::string texto;
     int curtidas;
     lista_usuarios curtiram;
+
+    publicacao(int ID, int IDUSUARIO, int TIMESTAMP, std::string TEXTO){
+        id = ID;
+        idUsuario = IDUSUARIO;
+        timestamp = TIMESTAMP;
+        texto = TEXTO;
+        curtidas = 0;
+        curtiram.inicio = nullptr;
+    }
 };
 
 void inicializarMiniRede(MiniRede& rede);
@@ -125,11 +98,6 @@ void curtirPublicacao(MiniRede& rede, int idUsuario, int idPost, std::ostream& s
 void consultarNotificacoes(MiniRede& rede, int idUsuario, int k, std::ostream& saida);
 void gerarFeed(MiniRede& rede, int idUsuario, int k, std::ostream& saida);
 void listarTopPosts(MiniRede& rede, int k, std::ostream& saida);
-
-
-void novo_seguidor(lista_usuarios *seguidos,usuario *novo);
-bool ja_seguido(lista_usuarios *seguidos,usuario *novo);
-void nova_publicacao(lista_publicacoes *publicacoes, publicacao *novo);
 
 // TODO: declarar aqui as funcoes auxiliares escolhidas pelo grupo.
 //

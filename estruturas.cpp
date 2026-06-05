@@ -1,4 +1,3 @@
-#include "estruturas.h"
 #include "minirede.h"
 
 node_arvore *insereAVL(node_arvore *a, usuario *usuario, bool& aumentouAltura){
@@ -210,25 +209,37 @@ void insereHash(MiniRede& rede, usuario *usuario){
 
 node_hash *buscarHash(MiniRede& rede, std::string username){
     unsigned int indice = hash(username);
-    node_hash *current = rede.tabela_hash[indice];
+    node_hash *atual = rede.tabela_hash[indice];
 
-    while(current != nullptr && current->usuario->username != username){
-        current = current->prox;
+    while(atual != nullptr && atual->usuario->username != username){
+        atual = atual->prox;
     }
-    return current;
+    return atual;
 }
 
-void novo_seguidor(lista_usuarios *seguidos,usuario *novo){
-    node_lista_usuarios* novo_seg = new node_lista_usuarios;
+void novoSeguidor(lista_usuarios *seguidos, usuario *novo){
+    node_lista_usuarios *novo_seg = new node_lista_usuarios;
     novo_seg->usuario = novo;
-    novo_seg->prox = seguidos->inicio;
-    seguidos->inicio = novo_seg;
+
+    if(seguidos->inicio == nullptr || seguidos->inicio->usuario->id > novo_seg->usuario->id){
+        novo_seg->prox = seguidos->inicio;
+        seguidos->inicio = novo_seg;
+        return;
+    }
+    node_lista_usuarios *atual = seguidos->inicio;
+    node_lista_usuarios *anterior = nullptr;
+    while(novo_seg->usuario->id > atual->usuario->id && (atual != nullptr)){
+        anterior = atual;
+        atual = atual->prox;
+    }
+    anterior->prox = novo_seg;
+    novo_seg->prox = atual;
 }
 
-bool ja_seguido(lista_usuarios *seguidos,usuario *novo){
-    node_lista_usuarios* atual = seguidos->inicio;
-    while (atual != nullptr){
-        if (atual->usuario == novo){
+bool jaSeguido(lista_usuarios *seguidos, usuario *novo){
+    node_lista_usuarios *atual = seguidos->inicio;
+    while(atual != nullptr){
+        if(atual->usuario == novo){
             return true;
         }
         atual = atual->prox;
@@ -236,8 +247,8 @@ bool ja_seguido(lista_usuarios *seguidos,usuario *novo){
     return false;
 }
 
-void nova_publicacao(lista_publicacoes *publicacoes, publicacao *novo){
-    node_lista_publicacoes* novo_post = new node_lista_publicacoes;
+void novaPublicacao(lista_publicacoes *publicacoes, publicacao *novo){
+    node_lista_publicacoes *novo_post = new node_lista_publicacoes;
     novo_post->publicacao = novo;
     novo_post->prox = publicacoes->inicio;
     publicacoes->inicio = novo_post;
