@@ -1,8 +1,10 @@
 #ifndef MINI_REDE_H
 #define MINI_REDE_H
 
+
 #include <iostream>
 #include "estruturas.h"
+#include "minirede.h"
 
 const int TAM_USERNAME = 50;
 const int TAM_NOME = 100;
@@ -117,12 +119,17 @@ void listarUsuarios(MiniRede& rede, std::ostream& saida);
 void seguirUsuario(MiniRede& rede, int idSeguidor, int idSeguido, std::ostream& saida);
 void listarSeguindo(MiniRede& rede, int idUsuario, std::ostream& saida);
 
-void cadastrarPublicacao(MiniRede& rede, int idPost, int idAutor, int timestamp, const char texto[], std::ostream& saida);
+void cadastrarPublicacao(MiniRede& rede, int idPost, int idAutor, int timestamp, std::string texto, std::ostream& saida);
 void curtirPublicacao(MiniRede& rede, int idUsuario, int idPost, std::ostream& saida);
 
 void consultarNotificacoes(MiniRede& rede, int idUsuario, int k, std::ostream& saida);
 void gerarFeed(MiniRede& rede, int idUsuario, int k, std::ostream& saida);
 void listarTopPosts(MiniRede& rede, int k, std::ostream& saida);
+
+
+void novo_seguidor(lista_usuarios *seguidos,usuario *novo);
+bool ja_seguido(lista_usuarios *seguidos,usuario *novo);
+void nova_publicacao(lista_publicacoes *publicacoes, publicacao *novo);
 
 // TODO: declarar aqui as funcoes auxiliares escolhidas pelo grupo.
 //

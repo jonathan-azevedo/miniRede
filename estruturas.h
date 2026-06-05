@@ -3,6 +3,7 @@
 
 #include <iostream>
 
+
 struct usuario;
 struct MiniRede;
 
@@ -30,6 +31,4 @@ void imprimirAVL(node_arvore *a, std::ostream& saida);
 unsigned int hash(const std::string& username);
 void insereHash(MiniRede& rede, usuario *novo_usuario);
 node_hash *buscarHash(MiniRede& rede, std::string username);
-
-
 #endif

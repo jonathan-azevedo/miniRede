@@ -217,3 +217,28 @@ node_hash *buscarHash(MiniRede& rede, std::string username){
     }
     return current;
 }
+
+void novo_seguidor(lista_usuarios *seguidos,usuario *novo){
+    node_lista_usuarios* novo_seg = new node_lista_usuarios;
+    novo_seg->usuario = novo;
+    novo_seg->prox = seguidos->inicio;
+    seguidos->inicio = novo_seg;
+}
+
+bool ja_seguido(lista_usuarios *seguidos,usuario *novo){
+    node_lista_usuarios* atual = seguidos->inicio;
+    while (atual != nullptr){
+        if (atual->usuario == novo){
+            return true;
+        }
+        atual = atual->prox;
+    }
+    return false;
+}
+
+void nova_publicacao(lista_publicacoes *publicacoes, publicacao *novo){
+    node_lista_publicacoes* novo_post = new node_lista_publicacoes;
+    novo_post->publicacao = novo;
+    novo_post->prox = publicacoes->inicio;
+    publicacoes->inicio = novo_post;
+}

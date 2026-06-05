@@ -1,4 +1,5 @@
 #include "minirede.h"
+#include "estruturas.h"
 
 
 void inicializarMiniRede(MiniRede& rede){
@@ -37,6 +38,22 @@ void processarComandos(MiniRede& rede, std::istream& entrada, std::ostream& said
             std::string username;
             entrada >> username;
             buscarUsuarioPorUsername(rede, username, saida);
+        }
+        else if(comando == "FOLLOW"){
+            int id;
+            int id2;
+            entrada >> id >> id2;
+            seguirUsuario(rede,id,id2,saida);
+        }
+        else if(comando == "ADD_POST"){
+            int postid;
+            int id;
+            int timestamp;
+            std::string texto;
+            entrada >> postid >> id >> timestamp;
+            std::getline(std::cin,texto);
+            cadastrarPublicacao(rede, postid,id, timestamp,texto,saida);
+
         }
         else{
             saida << "ERROR INVALID_COMMAND\n";
@@ -87,15 +104,52 @@ void listarUsuarios(MiniRede& rede, std::ostream& saida){
 }
 
 void seguirUsuario(MiniRede& rede, int idSeguidor, int idSeguido, std::ostream& saida){
-    // TODO
+
+    usuario* seguidor = buscarAVL(rede.raiz_arvore, idSeguidor);
+    usuario* seguido = buscarAVL(rede.raiz_arvore, idSeguido);
+
+    if (seguidor == nullptr || seguido == nullptr){
+        saida << "ERROR USER_NOT_FOUND\n";
+        return;
+    }
+    if(idSeguidor == idSeguido){
+        saida << "ERROR CANNOT_FOLLOW_SELF\n";
+        return;
+    }
+
+    if(!ja_seguido(&seguidor->seguindo, seguido)){
+
+        novo_seguidor(&seguidor->seguindo, seguido);
+        saida << "FOLLOWED\n";
+        return;
+    }
+
+    saida << "ERROR ALREADY_FOLLOWING\n";
+    return;
+
 }
 
 void listarSeguindo(MiniRede& rede, int idUsuario, std::ostream& saida){
     // TODO
 }
 
-void cadastrarPublicacao(MiniRede& rede, int idPost, int idAutor, int timestamp, const char texto[], std::ostream& saida){
-    // TODO
+void cadastrarPublicacao(MiniRede& rede, int idPost, int idAutor, int timestamp, std::string texto, std::ostream& saida){
+    usuario* id_usuario = buscarAVL(rede.raiz_arvore, idAutor);
+    if (id_usuario == nullptr) {
+        saida << "ERROR USER_NOT_FOUND\n";
+        return;
+    }
+
+    publicacao* novo_post = new publicacao;
+    novo_post->id = idPost;
+    novo_post->idUsuario = idAutor;
+    novo_post->timestamp = timestamp;
+    novo_post->texto = texto;
+
+    nova_publicacao(&(id_usuario->publicacoes),novo_post);
+    saida << "POST_ADDED" << std::endl;
+    return;
+    // OBS FALTA AINDA ARRUMAR A PARTE DE " ERROR POST_EXISTS" ainda não está implementado
 }
 
 void curtirPublicacao(MiniRede& rede, int idUsuario, int idPost, std::ostream& saida){
