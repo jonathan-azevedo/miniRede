@@ -2,8 +2,10 @@
 
 
 void inicializarMiniRede(MiniRede& rede){
-    node_arvore *raiz = nullptr;
-    rede.raiz_arvore = raiz;
+    rede.raiz_arvore = nullptr;
+    for(int i = 0; i < TAM_HASH; i++) {
+        rede.tabela_hash[i] = nullptr;
+    }
 }
 
 void liberarMiniRede(MiniRede& rede){
@@ -31,6 +33,11 @@ void processarComandos(MiniRede& rede, std::istream& entrada, std::ostream& said
         else if(comando == "LIST_USERS"){
             listarUsuarios(rede, saida);
         }
+        else if(comando == "FIND_USERNAME"){
+            std::string username;
+            entrada >> username;
+            buscarUsuarioPorUsername(rede, username, saida);
+        }
         else{
             saida << "ERROR INVALID_COMMAND\n";
         }
@@ -38,19 +45,22 @@ void processarComandos(MiniRede& rede, std::istream& entrada, std::ostream& said
 }
 
 void cadastrarUsuario(MiniRede& rede, int id, std::string username, std::string nomeCompleto, std::ostream& saida){
-    usuario *checagem = buscaAVL(rede.raiz_arvore, id);
-    if(checagem != nullptr){
+    usuario *checagem_arvore = buscarAVL(rede.raiz_arvore, id);
+    node_hash *checagem_hash = buscarHash(rede, username);
+    if(checagem_arvore != nullptr || checagem_hash != nullptr){
         saida << "ERROR USER_EXISTS\n";
         return;
     }
     usuario *novo_usuario = new usuario{id,username,nomeCompleto};
     bool aumentouAltura = false;
     rede.raiz_arvore = insereAVL(rede.raiz_arvore, novo_usuario, aumentouAltura);
+    insereHash(rede, novo_usuario);
     saida << "USER_ADDED\n";
 }
 
 void buscarUsuarioPorId(MiniRede& rede, int id, std::ostream& saida){
-    usuario *user = buscaAVL(rede.raiz_arvore, id);
+    usuario *user = buscarAVL(rede.raiz_arvore, id);
+
     if(user != nullptr){
         saida << "USER " << user->id << " " << user->username << " " << user->nome << "\n";
     }
@@ -60,8 +70,14 @@ void buscarUsuarioPorId(MiniRede& rede, int id, std::ostream& saida){
     
 }
 
-void buscarUsuarioPorUsername(MiniRede& rede, const char username[], std::ostream& saida){
-    // TODO
+void buscarUsuarioPorUsername(MiniRede& rede, std::string username, std::ostream& saida){
+    node_hash *resultado = buscarHash(rede, username);
+
+    if(resultado == nullptr){
+        saida << "ERROR USER_NOT_FOUND" << "\n";
+        return;
+    }
+    saida << "USER " << resultado->usuario->id << " " << resultado->usuario->username << " " << resultado->usuario->nome << "\n";
 }
 
 void listarUsuarios(MiniRede& rede, std::ostream& saida){

@@ -8,6 +8,7 @@ const int TAM_USERNAME = 50;
 const int TAM_NOME = 100;
 const int TAM_TEXTO = 280;
 const int TAM_COMANDO = 30;
+const int TAM_HASH = 181;
 
 // TODO: definir as structs principais do trabalho.
 //
@@ -32,6 +33,7 @@ struct fila_notificacoes;
 
 struct MiniRede {
     node_arvore *raiz_arvore;
+    node_hash *tabela_hash[TAM_HASH];
     // TODO: declarar aqui os ponteiros/estruturas principais da rede.
     //
     // Exemplos de responsabilidades:
@@ -109,7 +111,7 @@ void processarComandos(MiniRede& rede, std::istream& entrada, std::ostream& said
 
 void cadastrarUsuario(MiniRede& rede, int id, std::string username, std::string nomeCompleto, std::ostream& saida);
 void buscarUsuarioPorId(MiniRede& rede, int id, std::ostream& saida);
-void buscarUsuarioPorUsername(MiniRede& rede, const char username[], std::ostream& saida);
+void buscarUsuarioPorUsername(MiniRede& rede, std::string username, std::ostream& saida);
 void listarUsuarios(MiniRede& rede, std::ostream& saida);
 
 void seguirUsuario(MiniRede& rede, int idSeguidor, int idSeguido, std::ostream& saida);

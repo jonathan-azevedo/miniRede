@@ -167,7 +167,7 @@ node_arvore *rotacaoDireitaEsquerda(node_arvore *a) {
     return y; 
 }
 
-usuario *buscaAVL(node_arvore *a, int id){
+usuario *buscarAVL(node_arvore *a, int id){
     if(a == nullptr)
         return nullptr;
     usuario *user = a->usuario;
@@ -175,9 +175,9 @@ usuario *buscaAVL(node_arvore *a, int id){
         return user;
     }
     if(id < user->id)
-       return buscaAVL(a->esq,id);
+       return buscarAVL(a->esq,id);
     
-    return buscaAVL(a->dir, id);
+    return buscarAVL(a->dir, id);
 }
 
 void imprimirAVL(node_arvore *a, std::ostream& saida){
@@ -189,4 +189,31 @@ void imprimirAVL(node_arvore *a, std::ostream& saida){
         saida << "USER " << user->id << " " << user->username << " " << user->nome << "\n";
         imprimirAVL(a->dir, saida);
     }
+}
+unsigned int hash(const std::string& username) {
+    unsigned int hash = 2166136261u; 
+    unsigned int prime = 16777619u; 
+
+    for(char c : username){
+        hash ^= (unsigned char)c;
+        hash *= prime;
+    }
+
+    return hash % TAM_HASH;
+}
+
+void insereHash(MiniRede& rede, usuario *usuario){
+    unsigned int indice = hash(usuario->username);
+    node_hash *novo = new node_hash{usuario, rede.tabela_hash[indice]};
+    rede.tabela_hash[indice] = novo;
+}
+
+node_hash *buscarHash(MiniRede& rede, std::string username){
+    unsigned int indice = hash(username);
+    node_hash *current = rede.tabela_hash[indice];
+
+    while(current != nullptr && current->usuario->username != username){
+        current = current->prox;
+    }
+    return current;
 }
