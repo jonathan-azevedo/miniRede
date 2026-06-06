@@ -33,8 +33,10 @@ struct lista_usuarios;
 struct fila_notificacoes;
 
 struct MiniRede {
-    node_arvore *raiz_arvore;
+    node_arvore *raiz_usuarios;
     node_hash *tabela_hash[TAM_HASH];
+    node_arvore *raiz_publicacoes;
+
     // TODO: declarar aqui os ponteiros/estruturas principais da rede.
     //
     // Exemplos de responsabilidades:

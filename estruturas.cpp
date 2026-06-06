@@ -1,9 +1,10 @@
 #include "minirede.h"
 
-node_arvore *insereAVL(node_arvore *a, usuario *usuario, bool& aumentouAltura){
+node_arvore *insereAVL(node_arvore *a, int id, void *dado, bool& aumentouAltura){
     if(a == nullptr){
         node_arvore *novo = new node_arvore;
-        novo->usuario = usuario;
+        novo->dado = dado;
+        novo->id = id;
         novo->FB = 0;
         novo->esq = nullptr;
         novo->dir = nullptr;
@@ -11,8 +12,8 @@ node_arvore *insereAVL(node_arvore *a, usuario *usuario, bool& aumentouAltura){
         return novo;
     }
 
-    if(usuario->id < a->usuario->id){
-        a->esq = insereAVL(a->esq, usuario, aumentouAltura);
+    if(id < a->id){
+        a->esq = insereAVL(a->esq, id, dado, aumentouAltura);
 
         if(aumentouAltura){
             switch (a->FB) {
@@ -31,7 +32,7 @@ node_arvore *insereAVL(node_arvore *a, usuario *usuario, bool& aumentouAltura){
             }
         }
     }else{
-        a->dir = insereAVL(a->dir, usuario, aumentouAltura);
+        a->dir = insereAVL(a->dir, id, dado, aumentouAltura);
 
         if(aumentouAltura){
             switch (a->FB) {
@@ -166,30 +167,30 @@ node_arvore *rotacaoDireitaEsquerda(node_arvore *a) {
     return y; 
 }
 
-usuario *buscarAVL(node_arvore *a, int id){
+node_arvore *buscarAVL(node_arvore *a, int id){
     if(a == nullptr)
         return nullptr;
-    usuario *user = a->usuario;
-    if(user->id == id){
-        return user;
+    int idenficador = a->id;
+    if(idenficador == id){
+        return a;
     }
-    if(id < user->id)
-       return buscarAVL(a->esq,id);
+    if(id < idenficador)
+       return buscarAVL(a->esq, id);
     
     return buscarAVL(a->dir, id);
 }
 
-void imprimirAVL(node_arvore *a, std::ostream& saida){
+void imprimirUsuariosAVL(node_arvore *a, std::ostream& saida){
     if(a == nullptr)
         return;
     else{
-        usuario *user = a->usuario;
-        imprimirAVL(a->esq, saida);
+        usuario *user = (usuario*) a->dado;
+        imprimirUsuariosAVL(a->esq, saida);
         saida << "USER " << user->id << " " << user->username << " " << user->nome << "\n";
-        imprimirAVL(a->dir, saida);
+        imprimirUsuariosAVL(a->dir, saida);
     }
 }
-unsigned int hash(const std::string& username) {
+unsigned int calcularHash(const std::string& username) {
     unsigned int hash = 2166136261u; 
     unsigned int prime = 16777619u; 
 
@@ -202,13 +203,13 @@ unsigned int hash(const std::string& username) {
 }
 
 void insereHash(MiniRede& rede, usuario *usuario){
-    unsigned int indice = hash(usuario->username);
+    unsigned int indice = calcularHash(usuario->username);
     node_hash *novo = new node_hash{usuario, rede.tabela_hash[indice]};
     rede.tabela_hash[indice] = novo;
 }
 
 node_hash *buscarHash(MiniRede& rede, std::string username){
-    unsigned int indice = hash(username);
+    unsigned int indice = calcularHash(username);
     node_hash *atual = rede.tabela_hash[indice];
 
     while(atual != nullptr && atual->usuario->username != username){
@@ -228,7 +229,7 @@ void novoSeguidor(lista_usuarios *seguidos, usuario *novo){
     }
     node_lista_usuarios *atual = seguidos->inicio;
     node_lista_usuarios *anterior = nullptr;
-    while(novo_seg->usuario->id > atual->usuario->id && (atual != nullptr)){
+    while((atual != nullptr) && novo_seg->usuario->id > atual->usuario->id){
         anterior = atual;
         atual = atual->prox;
     }
@@ -247,7 +248,7 @@ bool jaSeguido(lista_usuarios *seguidos, usuario *novo){
     return false;
 }
 
-void novaPublicacao(lista_publicacoes *publicacoes, publicacao *novo){
+void novaPublicacaoLista(lista_publicacoes *publicacoes, publicacao *novo){
     node_lista_publicacoes *novo_post = new node_lista_publicacoes;
     novo_post->publicacao = novo;
     novo_post->prox = publicacoes->inicio;

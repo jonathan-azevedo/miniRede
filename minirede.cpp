@@ -2,7 +2,8 @@
 
 
 void inicializarMiniRede(MiniRede& rede){
-    rede.raiz_arvore = nullptr;
+    rede.raiz_usuarios = nullptr;
+    rede.raiz_publicacoes = nullptr;
     for(int i = 0; i < TAM_HASH; i++) {
         rede.tabela_hash[i] = nullptr;
     }
@@ -54,18 +55,20 @@ void processarComandos(MiniRede& rede, std::istream& entrada, std::ostream& said
             int timestamp;
             std::string texto;
             entrada >> postid >> id >> timestamp;
-            std::getline(std::cin, texto);
+            entrada.ignore();
+            std::getline(entrada, texto);
             cadastrarPublicacao(rede, postid, id, timestamp, texto, saida);
-
         }
         else{
             saida << "ERROR INVALID_COMMAND\n";
+            std::string restoDaLinha;
+            std::getline(entrada, restoDaLinha);
         }
     }
 }
 
 void cadastrarUsuario(MiniRede& rede, int id, std::string username, std::string nomeCompleto, std::ostream& saida){
-    usuario *checagem_arvore = buscarAVL(rede.raiz_arvore, id);
+    node_arvore *checagem_arvore = buscarAVL(rede.raiz_usuarios, id);
     node_hash *checagem_hash = buscarHash(rede, username);
     if(checagem_arvore != nullptr || checagem_hash != nullptr){
         saida << "ERROR USER_EXISTS\n";
@@ -73,15 +76,15 @@ void cadastrarUsuario(MiniRede& rede, int id, std::string username, std::string 
     }
     usuario *novo_usuario = new usuario{id,username,nomeCompleto};
     bool aumentouAltura = false;
-    rede.raiz_arvore = insereAVL(rede.raiz_arvore, novo_usuario, aumentouAltura);
+    rede.raiz_usuarios = insereAVL(rede.raiz_usuarios, novo_usuario->id, novo_usuario, aumentouAltura);
     insereHash(rede, novo_usuario);
     saida << "USER_ADDED\n";
 }
 
 void buscarUsuarioPorId(MiniRede& rede, int id, std::ostream& saida){
-    usuario *user = buscarAVL(rede.raiz_arvore, id);
-
-    if(user != nullptr){
+    node_arvore *node = buscarAVL(rede.raiz_usuarios, id);
+    if(node != nullptr){
+        usuario *user = (usuario*)node->dado;
         saida << "USER " << user->id << " " << user->username << " " << user->nome << "\n";
     }
     else{
@@ -102,15 +105,15 @@ void buscarUsuarioPorUsername(MiniRede& rede, std::string username, std::ostream
 
 void listarUsuarios(MiniRede& rede, std::ostream& saida){
     saida << "USERS_BEGIN\n";
-    imprimirAVL(rede.raiz_arvore, saida);
+    imprimirUsuariosAVL(rede.raiz_usuarios, saida);
     saida << "USERS_END\n";
 }
 
 void seguirUsuario(MiniRede& rede, int idSeguidor, int idSeguido, std::ostream& saida){
-    usuario *seguidor = buscarAVL(rede.raiz_arvore, idSeguidor);
-    usuario *seguido = buscarAVL(rede.raiz_arvore, idSeguido);
+    node_arvore *node_seguidor = buscarAVL(rede.raiz_usuarios, idSeguidor);
+    node_arvore *node_seguido = buscarAVL(rede.raiz_usuarios, idSeguido);
 
-    if(seguidor == nullptr || seguido == nullptr){
+    if(node_seguidor == nullptr || node_seguido == nullptr){
         saida << "ERROR USER_NOT_FOUND\n";
         return;
     }
@@ -118,11 +121,12 @@ void seguirUsuario(MiniRede& rede, int idSeguidor, int idSeguido, std::ostream& 
         saida << "ERROR CANNOT_FOLLOW_SELF\n";
         return;
     }
+    usuario *seguidor = (usuario*)node_seguidor->dado;
+    usuario *seguido  = (usuario*)node_seguido->dado;
 
-    if(!jaSeguido(&seguidor->seguindo, seguido)){
-        novoSeguidor(&seguidor->seguindo, seguido);
+    if(!jaSeguido(&(seguidor->seguindo), seguido)){
+        novoSeguidor(&(seguidor->seguindo), seguido);
         saida << "FOLLOWED\n";
-        //notificar
         return;
     }
 
@@ -130,13 +134,13 @@ void seguirUsuario(MiniRede& rede, int idSeguidor, int idSeguido, std::ostream& 
 }
 
 void listarSeguindo(MiniRede& rede, int idUsuario, std::ostream& saida){
-    usuario *user = buscarAVL(rede.raiz_arvore, idUsuario);
-    if(user == nullptr){
+    node_arvore *node = buscarAVL(rede.raiz_usuarios, idUsuario);
+    if(node == nullptr){
         saida << "ERROR USER_NOT_FOUND\n";
         return;
     }
     saida << "FOLLOWING_BEGIN\n";
-    node_lista_usuarios *atual = user->seguindo.inicio;
+    node_lista_usuarios *atual = ((usuario*)node->dado)->seguindo.inicio;
     while(atual != nullptr){
         saida << "USER " << atual->usuario->id << " " << atual->usuario->username << " " << atual->usuario->nome << "\n";
         atual = atual->prox;
@@ -145,19 +149,22 @@ void listarSeguindo(MiniRede& rede, int idUsuario, std::ostream& saida){
 }
 
 void cadastrarPublicacao(MiniRede& rede, int idPost, int idAutor, int timestamp, std::string texto, std::ostream& saida){
-    usuario *id_usuario = buscarAVL(rede.raiz_arvore, idAutor);
-    if(id_usuario == nullptr) {
+    node_arvore *node = buscarAVL(rede.raiz_usuarios, idAutor);
+    if(node == nullptr) {
         saida << "ERROR USER_NOT_FOUND\n";
         return;
     }
-
-
+    node_arvore *checagem = buscarAVL(rede.raiz_publicacoes, idPost);
+    if(checagem != nullptr){
+        saida << "ERROR POST_EXISTS\n";
+        return;
+    }
 
     publicacao *novo_post = new publicacao{idPost, idAutor, timestamp, texto};
-
-    novaPublicacao(&(id_usuario->publicacoes), novo_post);
+    bool aumentou = false;
+    rede.raiz_publicacoes = insereAVL(rede.raiz_publicacoes, idPost, novo_post, aumentou);
+    novaPublicacaoLista(&(((usuario*)node->dado)->publicacoes), novo_post);
     saida << "POST_ADDED" << "\n";
-    // OBS FALTA AINDA ARRUMAR A PARTE DE " ERROR POST_EXISTS" ainda não está implementado
 }
 
 void curtirPublicacao(MiniRede& rede, int idUsuario, int idPost, std::ostream& saida){

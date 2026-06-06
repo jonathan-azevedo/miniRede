@@ -2,6 +2,7 @@
 #define ESTRUTURAS_H
 
 #include <iostream>
+#include <string>
 
 
 struct usuario;
@@ -19,7 +20,8 @@ struct notificacao{
 };
 
 struct node_arvore{
-    usuario *usuario;
+    void *dado;
+    int id;
     int FB;
     node_arvore *esq;
     node_arvore *dir;
@@ -63,15 +65,15 @@ node_arvore *rotacaoEsquerdaDireita(node_arvore *a);
 node_arvore *rotacaoDireitaEsquerda(node_arvore *a);
 node_arvore *casoEsquerda(node_arvore* a, bool& aumentouAltura);
 node_arvore *casoDireita(node_arvore* a, bool& aumentouAltura);
-node_arvore *insereAVL(node_arvore* a, usuario *usuario, bool& aumentouAltura);
-usuario *buscarAVL(node_arvore *a, int id);
-void imprimirAVL(node_arvore *a, std::ostream& saida);
-unsigned int hash(const std::string& username);
+node_arvore *insereAVL(node_arvore* a, int id, void *dado, bool& aumentouAltura);
+node_arvore *buscarAVL(node_arvore *a, int id);
+void imprimirUsuariosAVL(node_arvore *a, std::ostream& saida);
+unsigned int calcularHash(const std::string& username);
 void insereHash(MiniRede& rede, usuario *novo_usuario);
 node_hash *buscarHash(MiniRede& rede, std::string username);
 void novoSeguidor(lista_usuarios *seguidos, usuario *novo);
 bool jaSeguido(lista_usuarios *seguidos, usuario *novo);
-void novaPublicacao(lista_publicacoes *publicacoes, publicacao *novo);
+void novaPublicacaoLista(lista_publicacoes *publicacoes, publicacao *novo);
 
 
 #endif
