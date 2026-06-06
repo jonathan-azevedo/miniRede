@@ -59,6 +59,11 @@ void processarComandos(MiniRede& rede, std::istream& entrada, std::ostream& said
             std::getline(entrada, texto);
             cadastrarPublicacao(rede, postid, id, timestamp, texto, saida);
         }
+        else if(comando == "LIKE"){
+            int id,idpost;
+            entrada >> id >> idpost;
+            curtirPublicacao(rede, id, idpost, saida);
+        }
         else{
             saida << "ERROR INVALID_COMMAND\n";
             std::string restoDaLinha;
@@ -127,6 +132,7 @@ void seguirUsuario(MiniRede& rede, int idSeguidor, int idSeguido, std::ostream& 
     if(!jaSeguido(&(seguidor->seguindo), seguido)){
         novoSeguidor(&(seguidor->seguindo), seguido);
         saida << "FOLLOWED\n";
+        //ADICIONAR NOTIFICAÇÃO
         return;
     }
 
@@ -168,7 +174,32 @@ void cadastrarPublicacao(MiniRede& rede, int idPost, int idAutor, int timestamp,
 }
 
 void curtirPublicacao(MiniRede& rede, int idUsuario, int idPost, std::ostream& saida){
-    // TODO
+    node_arvore *node_usuario = buscarAVL(rede.raiz_usuarios, idUsuario);
+    if(node_usuario == nullptr){
+        saida << "ERROR USER_NOT_FOUND\n";
+        return;
+    }
+    node_arvore *node_post = buscarAVL(rede.raiz_publicacoes, idPost);
+    if(node_post == nullptr){
+        saida << "ERROR POST_NOT_FOUND\n";
+        return;
+    }
+    usuario *user = (usuario*)node_usuario->dado;
+    publicacao *post = (publicacao*)node_post->dado;
+    node_lista_usuarios *atual = post->curtiram.inicio;
+
+    while(atual != nullptr){
+        if(atual->usuario->id == idUsuario){
+            saida << "ERROR ALREADY_LIKED\n";
+            return;
+        }
+        atual = atual->prox;
+    }
+    post->curtidas += 1;
+    node_lista_usuarios *novo = new node_lista_usuarios{user, post->curtiram.inicio};  
+    post->curtiram.inicio = novo;
+    saida << "LIKED\n";
+    //ADICIONAR NOTIFICAÇÃO
 }
 
 void consultarNotificacoes(MiniRede& rede, int idUsuario, int k, std::ostream& saida){
