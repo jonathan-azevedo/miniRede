@@ -9,10 +9,6 @@ void inicializarMiniRede(MiniRede& rede){
     }
 }
 
-void liberarMiniRede(MiniRede& rede){
-    // TODO
-}
-
 void processarComandos(MiniRede& rede, std::istream& entrada, std::ostream& saida){
     std::string comando;
     while(entrada >> comando){
@@ -240,12 +236,15 @@ void consultarNotificacoes(MiniRede& rede, int idUsuario, int k, std::ostream& s
     while(notificacoes != k && user->notificacoes.inicio != nullptr){
         node_fila *aux = user->notificacoes.inicio;
         if (aux->notificacao.tipo == FOLLOW) {
-            saida << "NOTIFICATION FOLLOW " << " " << aux->notificacao.idUsuario << "\n";
+            saida << "NOTIFICATION FOLLOW " << aux->notificacao.idUsuario << "\n";
         }
         else if(aux->notificacao.tipo == LIKE){
             saida << "NOTIFICATION LIKE " <<  aux->notificacao.idUsuario << " " << aux->notificacao.idPost << "\n";
         }
         user->notificacoes.inicio = aux->prox;
+        if(user->notificacoes.inicio == nullptr){
+           user->notificacoes.fim = nullptr;
+        }
         delete aux;
 
         notificacoes++;
@@ -314,6 +313,23 @@ void listarTopPosts(MiniRede& rede, int k, std::ostream& saida){
         node_lista_publicacoes *aux = liberar;
         liberar = liberar->prox;
         delete aux;
+    }
+}
+
+void liberarMiniRede(MiniRede& rede){
+    liberarArvoreUsuarios(rede.raiz_usuarios);
+    rede.raiz_usuarios = nullptr;
+    liberarArvorePublicacoes(rede.raiz_publicacoes);
+    rede.raiz_publicacoes = nullptr;
+
+    for(int i=0; i<TAM_HASH; i++){
+        node_hash *atual = rede.tabela_hash[i];
+        while(atual != nullptr){
+            node_hash *aux = atual;
+            atual = atual->prox;
+            delete aux;
+        }
+        rede.tabela_hash[i] = nullptr;
     }
 }
 

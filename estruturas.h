@@ -83,6 +83,10 @@ void ordenacaoFeed(lista_publicacoes& copia_lista_publicacoes);
 bool rankCurtidas(node_lista_publicacoes *post1, node_lista_publicacoes *post2);
 void ordenarRanking(lista_publicacoes& copia_lista_publicacoes);
 void armazenarPost(node_arvore *a, lista_publicacoes& lista_posts);
+void liberarListaUsuarios(lista_usuarios &lista);
+void liberarListaPublicacoes(lista_publicacoes &lista);
+void liberarArvoreUsuarios(node_arvore *a);
+void liberarArvorePublicacoes(node_arvore *a);
 
 
 #endif

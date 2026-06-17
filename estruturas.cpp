@@ -387,3 +387,68 @@ void armazenarPost(node_arvore *a, lista_publicacoes& lista_posts){
     }
     armazenarPost(a->dir,lista_posts);
 }
+
+void liberarListaUsuarios(lista_usuarios &lista){
+    node_lista_usuarios *atual = lista.inicio;
+    node_lista_usuarios *anterior = nullptr;
+    while(atual != nullptr){
+        anterior = atual;
+        atual = atual->prox;
+        delete anterior;
+    }
+    lista.inicio = nullptr;
+}
+
+void liberarListaPublicacoes(lista_publicacoes &lista){
+    node_lista_publicacoes *atual = lista.inicio;
+    node_lista_publicacoes *anterior = nullptr;
+    while(atual != nullptr){
+        anterior = atual;
+        atual = atual->prox;
+        delete anterior;
+    }
+    lista.inicio = nullptr;
+}
+
+void liberarFilaNotificacoes(fila_notificacoes &fila){
+    node_fila *atual = fila.inicio;
+    node_fila *anterior = nullptr;
+    while(atual != nullptr){
+        anterior = atual;
+        atual = atual->prox;
+        delete anterior;
+    }
+    fila.inicio = nullptr;
+    fila.fim = nullptr;
+}
+
+void liberarArvoreUsuarios(node_arvore *a){
+    if(a == nullptr) 
+        return;
+
+    liberarArvoreUsuarios(a->esq);
+    liberarArvoreUsuarios(a->dir);
+
+    usuario *user = (usuario*)a->dado;
+    liberarListaUsuarios(user->seguindo);
+    liberarListaPublicacoes(user->publicacoes);
+    liberarFilaNotificacoes(user->notificacoes);
+
+    delete user;
+    delete a;
+
+}
+
+void liberarArvorePublicacoes(node_arvore *a){
+    if(a == nullptr)
+        return;
+
+    liberarArvorePublicacoes(a->esq);
+    liberarArvorePublicacoes(a->dir);
+
+    publicacao *post = (publicacao*)a->dado;
+    liberarListaUsuarios(post->curtiram);
+
+    delete post;
+    delete a;
+}
