@@ -254,3 +254,136 @@ void novaPublicacaoLista(lista_publicacoes *publicacoes, publicacao *novo){
     novo_post->prox = publicacoes->inicio;
     publicacoes->inicio = novo_post;
 }
+
+void adicionarNotificacao(usuario* usuario, tipoNotificacao tipo, int idOrigem, int idPost){
+    node_fila *novo_no = new node_fila;
+    novo_no->notificacao.tipo = tipo;
+    novo_no->notificacao.idUsuario = idOrigem;
+    novo_no->notificacao.idPost = idPost;
+    novo_no->prox = nullptr;
+
+    if(usuario->notificacoes.inicio == nullptr){
+    usuario->notificacoes.inicio = novo_no;
+    usuario->notificacoes.fim = novo_no;
+    }
+    else {
+        usuario->notificacoes.fim->prox = novo_no;
+        usuario->notificacoes.fim = novo_no;
+    }
+}
+
+void guardarPost(usuario* usuario1, lista_publicacoes& copia_lista_publicacoes){
+    node_lista_usuarios *atual = usuario1->seguindo.inicio;
+
+    while(atual != nullptr){
+
+        usuario *seguidos = atual->usuario;
+        node_lista_publicacoes *post_atual = seguidos->publicacoes.inicio;
+
+        while(post_atual != nullptr) {
+            node_lista_publicacoes *novo_copia = new node_lista_publicacoes;
+            novo_copia->publicacao = post_atual->publicacao;
+            novo_copia->prox = copia_lista_publicacoes.inicio;
+            copia_lista_publicacoes.inicio = novo_copia;
+            post_atual = post_atual->prox;
+        }
+        atual = atual->prox;
+    }
+}
+
+bool gerenciarPost(node_lista_publicacoes *post1, node_lista_publicacoes *post2){
+
+    if (post1->publicacao->timestamp > post2->publicacao->timestamp || (post1->publicacao->timestamp == post2->publicacao->timestamp
+        && post1->publicacao->id < post2->publicacao->id)){
+        return true;
+       }
+    else {
+        return false;
+    }
+}
+
+void ordenacaoFeed(lista_publicacoes& copia_lista_publicacoes){
+    lista_publicacoes lista_ordenada;
+    lista_ordenada.inicio = nullptr;
+
+    node_lista_publicacoes *separada_seguidores = copia_lista_publicacoes.inicio;
+
+    while(separada_seguidores != nullptr){
+
+       node_lista_publicacoes *aux = separada_seguidores->prox;
+
+        if(lista_ordenada.inicio == nullptr || gerenciarPost(separada_seguidores, lista_ordenada.inicio)){
+            separada_seguidores->prox = lista_ordenada.inicio;
+            lista_ordenada.inicio = separada_seguidores;
+        }
+        else {
+            node_lista_publicacoes *procura = lista_ordenada.inicio;
+
+            while (procura->prox != nullptr && gerenciarPost(separada_seguidores, procura->prox) == false) {
+                procura = procura->prox;
+            }
+            separada_seguidores->prox = procura->prox;
+            procura->prox = separada_seguidores;
+        }
+        separada_seguidores = aux;
+    }
+    copia_lista_publicacoes.inicio = lista_ordenada.inicio;
+}
+bool rankCurtidas(node_lista_publicacoes *post1, node_lista_publicacoes *post2) {
+    if(post1->publicacao->curtidas > post2->publicacao->curtidas || (post1->publicacao->curtidas == post2->publicacao->curtidas && post1->publicacao->id <
+        post2->publicacao->id)){
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+void ordenarRanking(lista_publicacoes& copia_lista_publicacoes){
+    lista_publicacoes lista_ordenada_rank;
+    lista_ordenada_rank.inicio = nullptr;
+
+    node_lista_publicacoes *curtidas_separadas = copia_lista_publicacoes.inicio;
+
+    while(curtidas_separadas != nullptr){
+        node_lista_publicacoes *atual = curtidas_separadas->prox;
+
+        if(lista_ordenada_rank.inicio == nullptr || rankCurtidas(curtidas_separadas, lista_ordenada_rank.inicio)){
+            curtidas_separadas->prox = lista_ordenada_rank.inicio;
+            lista_ordenada_rank.inicio = curtidas_separadas;
+        }
+        else{
+            node_lista_publicacoes *procura = lista_ordenada_rank.inicio;
+
+            while (procura->prox != nullptr && rankCurtidas(curtidas_separadas, procura->prox) == false){
+                procura = procura->prox;
+            }
+            curtidas_separadas->prox = procura->prox;
+            procura->prox = curtidas_separadas;
+        }
+        curtidas_separadas = atual;
+    }
+    copia_lista_publicacoes.inicio = lista_ordenada_rank.inicio;
+}
+
+void armazenarPost(node_arvore *a, lista_publicacoes& lista_posts){
+    if(a == nullptr){
+        return;
+    }
+
+    armazenarPost(a->esq,lista_posts);
+
+    usuario *user = (usuario*)a->dado;
+    node_lista_publicacoes *post_atual = user->publicacoes.inicio;
+
+    while(post_atual != nullptr){
+        node_lista_publicacoes *copia_post = new node_lista_publicacoes;
+        copia_post->publicacao = post_atual->publicacao;
+
+        copia_post->prox = lista_posts.inicio;
+        lista_posts.inicio = copia_post;
+
+        post_atual = post_atual->prox;
+    }
+    armazenarPost(a->dir,lista_posts);
+}

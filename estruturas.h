@@ -4,6 +4,8 @@
 #include <iostream>
 #include <string>
 
+#include "minirede.h"
+
 
 struct usuario;
 struct MiniRede;
@@ -42,10 +44,10 @@ struct node_lista_publicacoes{
     node_lista_publicacoes *prox;
 };
 
-struct node_fila{
-    notificacao notificacao;
-    node_fila *prox;
-};
+    struct node_fila{
+        notificacao notificacao;
+        node_fila *prox;
+    };
 
 struct lista_usuarios{
     node_lista_usuarios *inicio;
@@ -74,6 +76,13 @@ node_hash *buscarHash(MiniRede& rede, std::string username);
 void novoSeguidor(lista_usuarios *seguidos, usuario *novo);
 bool jaSeguido(lista_usuarios *seguidos, usuario *novo);
 void novaPublicacaoLista(lista_publicacoes *publicacoes, publicacao *novo);
+void adicionarNotificacao(usuario* usuario1, tipoNotificacao tipo, int idOrigem, int idPost);
+void guardarPost(usuario* usuario, lista_publicacoes& copia_lista_publicacoes);
+bool gerenciarPost(node_lista_publicacoes *post1, node_lista_publicacoes *post2);
+void ordenacaoFeed(lista_publicacoes& copia_lista_publicacoes);
+bool rankCurtidas(node_lista_publicacoes *post1, node_lista_publicacoes *post2);
+void ordenarRanking(lista_publicacoes& copia_lista_publicacoes);
+void armazenarPost(node_arvore *a, lista_publicacoes& lista_posts);
 
 
 #endif

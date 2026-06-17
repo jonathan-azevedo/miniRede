@@ -64,6 +64,21 @@ void processarComandos(MiniRede& rede, std::istream& entrada, std::ostream& said
             entrada >> id >> idpost;
             curtirPublicacao(rede, id, idpost, saida);
         }
+        else if(comando == "GET_NOTIFICATIONS"){
+            int id, k_notificacoes;
+            entrada >> id >> k_notificacoes;
+            consultarNotificacoes(rede,id, k_notificacoes, saida);
+        }
+        else if(comando == "FEED"){
+            int id,k_publicacoes;
+            entrada >> id >> k_publicacoes;
+            gerarFeed( rede, id,k_publicacoes, saida);
+        }
+        else if(comando == "TOP_POSTS"){
+           int publicacoes;
+            entrada >> publicacoes;
+            listarTopPosts( rede, publicacoes, saida);
+        }
         else{
             saida << "ERROR INVALID_COMMAND\n";
             std::string restoDaLinha;
@@ -132,7 +147,9 @@ void seguirUsuario(MiniRede& rede, int idSeguidor, int idSeguido, std::ostream& 
     if(!jaSeguido(&(seguidor->seguindo), seguido)){
         novoSeguidor(&(seguidor->seguindo), seguido);
         saida << "FOLLOWED\n";
-        //ADICIONAR NOTIFICAÇÃO
+
+        adicionarNotificacao(seguido, FOLLOW,idSeguidor,-1);
+        //ADICIONAR NOTIFICAÇÃO - Adicionada
         return;
     }
 
@@ -199,19 +216,105 @@ void curtirPublicacao(MiniRede& rede, int idUsuario, int idPost, std::ostream& s
     node_lista_usuarios *novo = new node_lista_usuarios{user, post->curtiram.inicio};  
     post->curtiram.inicio = novo;
     saida << "LIKED\n";
-    //ADICIONAR NOTIFICAÇÃO
+
+    node_arvore *node_dono = buscarAVL(rede.raiz_usuarios,post->idUsuario);
+    usuario *dono_post = (usuario*)node_dono->dado;
+    adicionarNotificacao(dono_post, LIKE,idUsuario,idPost);
+    //ADICIONAR NOTIFICAÇÃO - Adicionada
 }
 
 void consultarNotificacoes(MiniRede& rede, int idUsuario, int k, std::ostream& saida){
-    // TODO
+
+    node_arvore *node = buscarAVL(rede.raiz_usuarios, idUsuario);
+    if(node == nullptr){
+        saida << "ERROR USER_NOT_FOUND\n";
+        return;
+    }
+
+    usuario *user = (usuario*)node->dado;
+
+    saida << "NOTIFICATIONS_BEGIN\n";
+
+    int notificacoes = 0;
+
+    while(notificacoes != k && user->notificacoes.inicio != nullptr){
+        node_fila *aux = user->notificacoes.inicio;
+        if (aux->notificacao.tipo == FOLLOW) {
+            saida << "NOTIFICATION FOLLOW " << " " << aux->notificacao.idUsuario << "\n";
+        }
+        else if(aux->notificacao.tipo == LIKE){
+            saida << "NOTIFICATION LIKE " <<  aux->notificacao.idUsuario << " " << aux->notificacao.idPost << "\n";
+        }
+        user->notificacoes.inicio = aux->prox;
+        delete aux;
+
+        notificacoes++;
+    }
+    saida << "NOTIFICATIONS_END\n"; // está com algum erro que eu não sei qual seria o problema
 }
 
 void gerarFeed(MiniRede& rede, int idUsuario, int k, std::ostream& saida){
-    // TODO
+    node_arvore *node_usuario = buscarAVL(rede.raiz_usuarios, idUsuario);
+    if (node_usuario == nullptr) {
+        saida << "ERROR USER_NOT_FOUND\n";
+        return;
+    }
+    usuario *user = (usuario*)node_usuario->dado;
+    lista_publicacoes copia_lista_publicacoes;
+    copia_lista_publicacoes.inicio = nullptr;
+
+    guardarPost(user, copia_lista_publicacoes);
+    ordenacaoFeed(copia_lista_publicacoes);
+
+    saida << "FEED_BEGIN\n";
+
+    int publicacoes = 0;
+
+    node_lista_publicacoes * atual = copia_lista_publicacoes.inicio;
+
+    while(publicacoes != k && atual != nullptr){
+
+        saida << "POST" << " " << atual->publicacao->id << " " << atual->publicacao->idUsuario << " " << atual->publicacao->timestamp << " " << atual->publicacao->curtidas << " " << atual->publicacao->texto << "\n";
+        atual = atual->prox;
+        publicacoes++;
+    }
+    saida << "FEED_END\n";
+
+    node_lista_publicacoes *liberar = copia_lista_publicacoes.inicio;
+    while(liberar != nullptr){
+        node_lista_publicacoes *aux = liberar;
+        liberar = liberar->prox;
+        delete aux;
+    }
 }
 
 void listarTopPosts(MiniRede& rede, int k, std::ostream& saida){
-    // TODO
+    lista_publicacoes copia_lista_publicacoes;
+    copia_lista_publicacoes.inicio = nullptr;
+
+    armazenarPost(rede.raiz_usuarios, copia_lista_publicacoes);
+    ordenarRanking(copia_lista_publicacoes);
+
+    saida << "TOP_POSTS_BEGIN\n";
+
+    int publicacoes = 0;
+    node_lista_publicacoes * atual = copia_lista_publicacoes.inicio;
+
+    while(publicacoes != k && atual != nullptr){
+        saida << "POST " << atual->publicacao->id << " " << atual->publicacao->idUsuario << " " << atual->publicacao->timestamp
+        << " " << atual->publicacao->curtidas << " " << atual->publicacao->texto << "\n";
+
+        atual = atual->prox;
+        publicacoes++;
+    }
+    saida << "TOP_POSTS_END\n";
+
+    node_lista_publicacoes *liberar = copia_lista_publicacoes.inicio;
+    while(liberar != nullptr){
+        node_lista_publicacoes *aux = liberar;
+        liberar = liberar->prox;
+        delete aux;
+    }
 }
 
 int main(){
