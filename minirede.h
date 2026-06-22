@@ -36,6 +36,7 @@ struct MiniRede {
     node_arvore *raiz_usuarios;
     node_hash *tabela_hash[TAM_HASH];
     node_arvore *raiz_publicacoes;
+    lista_publicacoes pilha_fadicional;
 
     // TODO: declarar aqui os ponteiros/estruturas principais da rede.
     //
@@ -102,15 +103,7 @@ void gerarFeed(MiniRede& rede, int idUsuario, int k, std::ostream& saida);
 void listarTopPosts(MiniRede& rede, int k, std::ostream& saida);
 
 // TODO: declarar aqui as funcoes auxiliares escolhidas pelo grupo.
-//
-// Exemplos de responsabilidades auxiliares:
-// - buscar usuario por id
-// - buscar usuario por username
-// - buscar publicacao por id
-// - inserir/listar/liberar arvore
-// - inserir/buscar/liberar tabela hash
-// - enfileirar/desenfileirar notificacoes
-// - manipular listas encadeadas
-// - ordenar vetores auxiliares para feed e ranking
+void deixarSeguir(MiniRede& rede, int idSeguidor, int idSeguido, std::ostream& saida);
+void pilhaPOST(MiniRede& rede, int k, std::ostream& saida);
 
 #endif

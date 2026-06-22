@@ -72,7 +72,7 @@ node_arvore *buscarAVL(node_arvore *a, int id);
 void imprimirUsuariosAVL(node_arvore *a, std::ostream& saida);
 unsigned int calcularHash(const std::string& username);
 void insereHash(MiniRede& rede, usuario *novo_usuario);
-node_hash *buscarHash(MiniRede& rede, std::string username);
+node_hash *buscarHash(MiniRede& rede, const std::string& username);
 void novoSeguidor(lista_usuarios *seguidos, usuario *novo);
 bool jaSeguido(lista_usuarios *seguidos, usuario *novo);
 void novaPublicacaoLista(lista_publicacoes *publicacoes, publicacao *novo);
@@ -82,7 +82,7 @@ bool gerenciarPost(node_lista_publicacoes *post1, node_lista_publicacoes *post2)
 void ordenacaoFeed(lista_publicacoes& copia_lista_publicacoes);
 bool rankCurtidas(node_lista_publicacoes *post1, node_lista_publicacoes *post2);
 void ordenarRanking(lista_publicacoes& copia_lista_publicacoes);
-void armazenarPost(node_arvore *a, lista_publicacoes& lista_posts);
+void todasPublicacoes(node_arvore *a, lista_publicacoes& lista_posts);
 void liberarListaUsuarios(lista_usuarios &lista);
 void liberarListaPublicacoes(lista_publicacoes &lista);
 void liberarArvoreUsuarios(node_arvore *a);

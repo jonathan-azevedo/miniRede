@@ -4,6 +4,7 @@
 void inicializarMiniRede(MiniRede& rede){
     rede.raiz_usuarios = nullptr;
     rede.raiz_publicacoes = nullptr;
+    rede.pilha_fadicional.inicio = nullptr;
     for(int i = 0; i < TAM_HASH; i++) {
         rede.tabela_hash[i] = nullptr;
     }
@@ -50,9 +51,7 @@ void processarComandos(MiniRede& rede, std::istream& entrada, std::ostream& said
             int id;
             int timestamp;
             std::string texto;
-            entrada >> postid >> id >> timestamp;
-            entrada.ignore();
-            std::getline(entrada, texto);
+            entrada >> postid >> id >> timestamp >> texto;
             cadastrarPublicacao(rede, postid, id, timestamp, texto, saida);
         }
         else if(comando == "LIKE"){
@@ -74,6 +73,16 @@ void processarComandos(MiniRede& rede, std::istream& entrada, std::ostream& said
            int publicacoes;
             entrada >> publicacoes;
             listarTopPosts( rede, publicacoes, saida);
+        }
+        else if(comando == "UNFOLLOW"){
+            int id1,id2;
+            entrada >> id1 >> id2;
+            deixarSeguir(rede, id1,id2,saida);
+        }
+        else if(comando == "STACK_POST"){
+            int k;
+            entrada >> k;
+            pilhaPOST( rede, k, saida);
         }
         else{
             saida << "ERROR INVALID_COMMAND\n";
@@ -145,7 +154,6 @@ void seguirUsuario(MiniRede& rede, int idSeguidor, int idSeguido, std::ostream& 
         saida << "FOLLOWED\n";
 
         adicionarNotificacao(seguido, FOLLOW,idSeguidor,-1);
-        //ADICIONAR NOTIFICAÇÃO - Adicionada
         return;
     }
 
@@ -183,6 +191,13 @@ void cadastrarPublicacao(MiniRede& rede, int idPost, int idAutor, int timestamp,
     bool aumentou = false;
     rede.raiz_publicacoes = insereAVL(rede.raiz_publicacoes, idPost, novo_post, aumentou);
     novaPublicacaoLista(&(((usuario*)node->dado)->publicacoes), novo_post);
+
+    node_lista_publicacoes *novo_post_pilha = new node_lista_publicacoes;
+    novo_post_pilha->publicacao = novo_post;
+
+    novo_post_pilha->prox = rede.pilha_fadicional.inicio;
+    rede.pilha_fadicional.inicio = novo_post_pilha;
+
     saida << "POST_ADDED" << "\n";
 }
 
@@ -216,7 +231,6 @@ void curtirPublicacao(MiniRede& rede, int idUsuario, int idPost, std::ostream& s
     node_arvore *node_dono = buscarAVL(rede.raiz_usuarios,post->idUsuario);
     usuario *dono_post = (usuario*)node_dono->dado;
     adicionarNotificacao(dono_post, LIKE,idUsuario,idPost);
-    //ADICIONAR NOTIFICAÇÃO - Adicionada
 }
 
 void consultarNotificacoes(MiniRede& rede, int idUsuario, int k, std::ostream& saida){
@@ -233,7 +247,7 @@ void consultarNotificacoes(MiniRede& rede, int idUsuario, int k, std::ostream& s
 
     int notificacoes = 0;
 
-    while(notificacoes != k && user->notificacoes.inicio != nullptr){
+    while(notificacoes < k && user->notificacoes.inicio != nullptr){
         node_fila *aux = user->notificacoes.inicio;
         if (aux->notificacao.tipo == FOLLOW) {
             saida << "NOTIFICATION FOLLOW " << aux->notificacao.idUsuario << "\n";
@@ -249,7 +263,7 @@ void consultarNotificacoes(MiniRede& rede, int idUsuario, int k, std::ostream& s
 
         notificacoes++;
     }
-    saida << "NOTIFICATIONS_END\n"; // está com algum erro que eu não sei qual seria o problema
+    saida << "NOTIFICATIONS_END\n";
 }
 
 void gerarFeed(MiniRede& rede, int idUsuario, int k, std::ostream& saida){
@@ -271,7 +285,7 @@ void gerarFeed(MiniRede& rede, int idUsuario, int k, std::ostream& saida){
 
     node_lista_publicacoes * atual = copia_lista_publicacoes.inicio;
 
-    while(publicacoes != k && atual != nullptr){
+    while(publicacoes < k && atual != nullptr){
 
         saida << "POST" << " " << atual->publicacao->id << " " << atual->publicacao->idUsuario << " " << atual->publicacao->timestamp << " " << atual->publicacao->curtidas << " " << atual->publicacao->texto << "\n";
         atual = atual->prox;
@@ -291,7 +305,7 @@ void listarTopPosts(MiniRede& rede, int k, std::ostream& saida){
     lista_publicacoes copia_lista_publicacoes;
     copia_lista_publicacoes.inicio = nullptr;
 
-    armazenarPost(rede.raiz_usuarios, copia_lista_publicacoes);
+   todasPublicacoes(rede.raiz_publicacoes,copia_lista_publicacoes);
     ordenarRanking(copia_lista_publicacoes);
 
     saida << "TOP_POSTS_BEGIN\n";
@@ -299,7 +313,7 @@ void listarTopPosts(MiniRede& rede, int k, std::ostream& saida){
     int publicacoes = 0;
     node_lista_publicacoes * atual = copia_lista_publicacoes.inicio;
 
-    while(publicacoes != k && atual != nullptr){
+    while(publicacoes < k && atual != nullptr){
         saida << "POST " << atual->publicacao->id << " " << atual->publicacao->idUsuario << " " << atual->publicacao->timestamp
         << " " << atual->publicacao->curtidas << " " << atual->publicacao->texto << "\n";
 
@@ -316,7 +330,66 @@ void listarTopPosts(MiniRede& rede, int k, std::ostream& saida){
     }
 }
 
+void deixarSeguir(MiniRede& rede, int idSeguidor, int idSeguido, std::ostream& saida) {
+    node_arvore *node_seguidor = buscarAVL(rede.raiz_usuarios, idSeguidor);
+    node_arvore *node_seguido = buscarAVL(rede.raiz_usuarios, idSeguido);
+
+    if(node_seguidor == nullptr || node_seguido == nullptr){
+        saida << "ERROR USER_NOT_FOUND\n";
+        return;
+    }
+    if(idSeguidor == idSeguido){
+        saida << "ERROR CANNOT_UNFOLLOW_SELF\n";
+        return;
+    }
+
+    usuario *user_seguidor = (usuario*)node_seguidor->dado;
+
+    node_lista_usuarios *atual = user_seguidor->seguindo.inicio;
+    node_lista_usuarios *anterior = nullptr;
+
+    while(atual != nullptr && atual->usuario->id != idSeguido){
+        anterior = atual;
+        atual = atual->prox;
+    }
+    if(atual != nullptr){
+        if (anterior == nullptr){
+            user_seguidor->seguindo.inicio = atual->prox;
+        }
+        else{
+            anterior->prox = atual->prox;
+        }
+        delete atual;
+        saida << "UNFOLLOWED\n";
+    }
+}
+
+void pilhaPOST(MiniRede& rede, int k, std::ostream& saida){
+
+    saida << "STACK_BEGIN\n";
+    int posts = 0;
+    node_lista_publicacoes *atual = rede.pilha_fadicional.inicio;
+
+    while(atual != nullptr && posts < k){
+        saida << "POST " << atual->publicacao->id << " " << atual->publicacao->idUsuario << " " <<  atual->publicacao->timestamp << " " <<
+            atual->publicacao->curtidas << " " << atual->publicacao->texto << "\n";
+
+        atual = atual->prox;
+        posts++;
+    }
+    saida << "STACK_END\n";
+}
+
 void liberarMiniRede(MiniRede& rede){
+
+    node_lista_publicacoes *atual_pilha = rede.pilha_fadicional.inicio;
+    while (atual_pilha != nullptr){
+        node_lista_publicacoes *aux = atual_pilha;
+        atual_pilha = atual_pilha->prox;
+        delete aux;
+    }
+    rede.pilha_fadicional.inicio = nullptr;
+
     liberarArvoreUsuarios(rede.raiz_usuarios);
     rede.raiz_usuarios = nullptr;
     liberarArvorePublicacoes(rede.raiz_publicacoes);

@@ -208,7 +208,7 @@ void insereHash(MiniRede& rede, usuario *usuario){
     rede.tabela_hash[indice] = novo;
 }
 
-node_hash *buscarHash(MiniRede& rede, std::string username){
+node_hash *buscarHash(MiniRede& rede, const std::string& username){
     unsigned int indice = calcularHash(username);
     node_hash *atual = rede.tabela_hash[indice];
 
@@ -293,11 +293,11 @@ void guardarPost(usuario* usuario1, lista_publicacoes& copia_lista_publicacoes){
 
 bool gerenciarPost(node_lista_publicacoes *post1, node_lista_publicacoes *post2){
 
-    if (post1->publicacao->timestamp > post2->publicacao->timestamp || (post1->publicacao->timestamp == post2->publicacao->timestamp
+    if(post1->publicacao->timestamp > post2->publicacao->timestamp || (post1->publicacao->timestamp == post2->publicacao->timestamp
         && post1->publicacao->id < post2->publicacao->id)){
         return true;
        }
-    else {
+    else{
         return false;
     }
 }
@@ -365,27 +365,20 @@ void ordenarRanking(lista_publicacoes& copia_lista_publicacoes){
     }
     copia_lista_publicacoes.inicio = lista_ordenada_rank.inicio;
 }
-
-void armazenarPost(node_arvore *a, lista_publicacoes& lista_posts){
+void todasPublicacoes(node_arvore *a, lista_publicacoes& lista_posts){
     if(a == nullptr){
         return;
     }
+    todasPublicacoes(a->esq,lista_posts);
 
-    armazenarPost(a->esq,lista_posts);
+    publicacao *post = (publicacao*)a->dado;
+    node_lista_publicacoes *copia_post = new node_lista_publicacoes;
+    copia_post->publicacao = post;
 
-    usuario *user = (usuario*)a->dado;
-    node_lista_publicacoes *post_atual = user->publicacoes.inicio;
+    copia_post->prox = lista_posts.inicio;
+    lista_posts.inicio = copia_post;
 
-    while(post_atual != nullptr){
-        node_lista_publicacoes *copia_post = new node_lista_publicacoes;
-        copia_post->publicacao = post_atual->publicacao;
-
-        copia_post->prox = lista_posts.inicio;
-        lista_posts.inicio = copia_post;
-
-        post_atual = post_atual->prox;
-    }
-    armazenarPost(a->dir,lista_posts);
+    todasPublicacoes(a->dir,lista_posts);
 }
 
 void liberarListaUsuarios(lista_usuarios &lista){
