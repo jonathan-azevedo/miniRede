@@ -6,6 +6,6 @@ How to execute:
 git clone https://github.com/jonathan-azevedo/miniRede
 cd miniRede
 g++ -o {choose a name} minirede.cpp estruturas.cpp
-./{name chosen}.exe
+.\{name chosen}.exe
 ```
 
