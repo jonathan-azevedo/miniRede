@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string>
 
-#include "minirede.h"
+const int TAM_HASH = 181;
 
 
 struct usuario;
@@ -44,10 +44,10 @@ struct node_lista_publicacoes{
     node_lista_publicacoes *prox;
 };
 
-    struct node_fila{
-        notificacao notificacao;
-        node_fila *prox;
-    };
+struct node_fila{
+    notificacao notificacao;
+    node_fila *prox;
+};
 
 struct lista_usuarios{
     node_lista_usuarios *inicio;

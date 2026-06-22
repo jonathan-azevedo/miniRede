@@ -9,7 +9,7 @@ const int TAM_USERNAME = 50;
 const int TAM_NOME = 100;
 const int TAM_TEXTO = 280;
 const int TAM_COMANDO = 30;
-const int TAM_HASH = 181;
+
 
 // TODO: definir as structs principais do trabalho.
 //
@@ -37,13 +37,6 @@ struct MiniRede {
     node_hash *tabela_hash[TAM_HASH];
     node_arvore *raiz_publicacoes;
     lista_publicacoes pilha_fadicional;
-
-    // TODO: declarar aqui os ponteiros/estruturas principais da rede.
-    //
-    // Exemplos de responsabilidades:
-    // - usuarios armazenados por id
-    // - usuarios acessiveis por username
-    // - publicacoes cadastradas
 };
 
 struct usuario{ 
@@ -102,7 +95,6 @@ void consultarNotificacoes(MiniRede& rede, int idUsuario, int k, std::ostream& s
 void gerarFeed(MiniRede& rede, int idUsuario, int k, std::ostream& saida);
 void listarTopPosts(MiniRede& rede, int k, std::ostream& saida);
 
-// TODO: declarar aqui as funcoes auxiliares escolhidas pelo grupo.
 void deixarSeguir(MiniRede& rede, int idSeguidor, int idSeguido, std::ostream& saida);
 void pilhaPOST(MiniRede& rede, int k, std::ostream& saida);
 

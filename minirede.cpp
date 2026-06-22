@@ -362,6 +362,9 @@ void deixarSeguir(MiniRede& rede, int idSeguidor, int idSeguido, std::ostream& s
         delete atual;
         saida << "UNFOLLOWED\n";
     }
+    else{
+        saida << "ERROR NOT_FOLLOWING\n";
+    }
 }
 
 void pilhaPOST(MiniRede& rede, int k, std::ostream& saida){
